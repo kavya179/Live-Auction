@@ -72,7 +72,7 @@ class Bid(models.Model):
         ordering = ['-amount']
 
     def __str__(self):
-        return f"{self.bidder.username} bid ${self.amount} on {self.item.title}"
+        return f"{self.bidder.username} bid ₹{self.amount} on {self.item.title}"
 
 
 class WatchList(models.Model):
@@ -260,5 +260,5 @@ class AuctionBid(models.Model):
 
     def __str__(self):
         status = '✓' if self.accepted else '✗'
-        return f"[{status}] {self.bidder_name} → ${self.amount} on '{self.auction.title}'"
+        return f"[{status}] {self.bidder_name} → ₹{self.amount} on '{self.auction.title}'"
 

@@ -43,8 +43,8 @@
                                         <span class="badge badge-ended">Ended</span>
                                     {% endif %}
                                 </td>
-                                <td>${{ item.starting_price }}</td>
-                                <td>${{ item.current_price }}</td>
+                                <td>₹{{ item.starting_price }}</td>
+                                <td>₹{{ item.current_price }}</td>
                                 <td>{{ item.bids.count }}</td>
                                 <td><a href="{% url 'auction_detail' item.pk %}" class="link-action">View →</a></td>
                             </tr>
@@ -82,8 +82,8 @@
                         {% for bid in my_bids %}
                             <tr>
                                 <td><a href="{% url 'auction_detail' bid.item.pk %}">{{ bid.item.title }}</a></td>
-                                <td>${{ bid.amount }}</td>
-                                <td>${{ bid.item.current_price }}</td>
+                                <td>₹{{ bid.amount }}</td>
+                                <td>₹{{ bid.item.current_price }}</td>
                                 <td>
                                     {% if bid.amount == bid.item.current_price %}
                                         <span class="badge badge-live">Leading 🏆</span>

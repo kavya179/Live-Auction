@@ -36,7 +36,7 @@
             <div class="detail-meta-grid">
                 <div class="meta-item">
                     <span class="meta-label">Starting Price</span>
-                    <span class="meta-value">${{ auction.starting_price }}</span>
+                    <span class="meta-value">₹{{ auction.starting_price }}</span>
                 </div>
                 <div class="meta-item">
                     <span class="meta-label">Total Accepted Bids</span>
@@ -59,7 +59,7 @@
                     <div class="winner-label">Official Auction Result</div>
                     <div class="winner-name" id="winner-name-display">{{ auction.winner_name|default:"No Winner" }}</div>
                     <div class="winner-price">
-                        Won with final auction price: <strong id="winner-price-display">${{ auction.current_price }}</strong>
+                        Won with final auction price: <strong id="winner-price-display">₹{{ auction.current_price }}</strong>
                     </div>
                     <div style="margin-top: 10px; font-size: 0.78rem; color: var(--text-dim);" id="winner-closed-time">
                         Auction Closed on {{ auction.end_time|date:"M d, Y at H:i" }}
@@ -75,7 +75,7 @@
         <!-- Current Bidding Price -->
         <div class="price-box">
             <div class="price-box-eyebrow">Current Highest Price</div>
-            <div class="price-box-value" id="current-price-val">${{ auction.current_price }}</div>
+            <div class="price-box-value" id="current-price-val">₹{{ auction.current_price }}</div>
             <div class="price-box-count" id="price-box-count">
                 {% if auction.status == 'LIVE' %}
                     Highest price accepted &bull; <span id="price-box-bids-count">{{ auction.auction_bids.count }}</span> total bid(s)
@@ -125,7 +125,7 @@
             {% if auction.status == 'LIVE' %}
                 <div class="bid-form-box" id="active-bid-form-box">
                     <h3>Place Your Bid</h3>
-                    <p class="bid-hint">Minimum required bid: &gt; $<strong id="bid-hint-price">{{ auction.current_price }}</strong></p>
+                    <p class="bid-hint">Minimum required bid: &gt; ₹<strong id="bid-hint-price">{{ auction.current_price }}</strong></p>
 
                     <form action="{% url 'submit_bid' auction.pk %}" method="post" id="bid-form">
                         {% csrf_token %}
@@ -139,7 +139,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="{{ bid_form.amount.id_for_label }}">Bid Amount ($ USD) *</label>
+                            <label for="{{ bid_form.amount.id_for_label }}">Bid Amount (₹ INR) *</label>
                             {{ bid_form.amount }}
                             {% if bid_form.amount.errors %}
                                 <span class="error-text">{{ bid_form.amount.errors|join:", " }}</span>
@@ -159,7 +159,7 @@
                     <span class="winner-trophy" style="font-size: 2rem;">🏆</span>
                     <div class="winner-label">Winner Declared</div>
                     <div class="winner-name" style="font-size: 1.2rem;" id="side-winner-name">{{ auction.winner_name|default:"No Winner" }}</div>
-                    <div class="winner-price">Final Price: <strong id="side-winner-price">${{ auction.current_price }}</strong></div>
+                    <div class="winner-price">Final Price: <strong id="side-winner-price">₹{{ auction.current_price }}</strong></div>
                 </div>
             {% endif %}
         </div>
@@ -179,7 +179,7 @@
                                 {{ bid.bidder_name }}
                             </div>
                             <div class="bid-amount">
-                                ${{ bid.amount }}
+                                ₹{{ bid.amount }}
                             </div>
                             <div class="bid-time">
                                 {% if bid.accepted %}
@@ -283,7 +283,7 @@
             const newPrice = parseFloat(data.current_price);
             const priceEl = document.getElementById('current-price-val');
             if (priceEl && newPrice !== previousPrice) {
-                priceEl.textContent = '$' + newPrice.toFixed(2);
+                priceEl.textContent = '₹' + newPrice.toFixed(2);
                 priceEl.classList.add('price-flash');
                 setTimeout(function() {
                     priceEl.classList.remove('price-flash');
@@ -329,7 +329,7 @@
                     const winnerNameEl = document.getElementById('winner-name-display');
                     if (winnerNameEl) winnerNameEl.textContent = data.winner_name || 'No Winner';
                     const winnerPriceEl = document.getElementById('winner-price-display');
-                    if (winnerPriceEl) winnerPriceEl.textContent = '$' + parseFloat(data.current_price).toFixed(2);
+                    if (winnerPriceEl) winnerPriceEl.textContent = '₹' + parseFloat(data.current_price).toFixed(2);
                 }
 
                 // Replace bid form with Winner Box on right column
@@ -340,7 +340,7 @@
                             <span class="winner-trophy" style="font-size: 2rem;">🏆</span>
                             <div class="winner-label">Winner Declared</div>
                             <div class="winner-name" style="font-size: 1.2rem;">${data.winner_name || 'No Winner'}</div>
-                            <div class="winner-price">Final Price: <strong>$${parseFloat(data.current_price).toFixed(2)}</strong></div>
+                            <div class="winner-price">Final Price: <strong>₹${parseFloat(data.current_price).toFixed(2)}</strong></div>
                         </div>
                     `;
                 }
@@ -364,7 +364,7 @@
                         html += `
                             <div class="bid-entry">
                                 <div class="bid-user">${bid.bidder_name}</div>
-                                <div class="bid-amount">$${parseFloat(bid.amount).toFixed(2)}</div>
+                                <div class="bid-amount">₹${parseFloat(bid.amount).toFixed(2)}</div>
                                 <div class="bid-time">${statusTag} &bull; ${bid.created_at}</div>
                             </div>
                         `;

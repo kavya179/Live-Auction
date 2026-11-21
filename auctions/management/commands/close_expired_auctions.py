@@ -64,10 +64,10 @@ class Command(BaseCommand):
             auction = Auction.finalize_if_expired(auction_id)
             if auction.winner_name:
                 self.stdout.write(self.style.SUCCESS(
-                    f"✓ Closed Auction #{auction.pk} '{auction.title}' — Winner: {auction.winner_name} (${auction.current_price})"
+                    f"✓ Closed Auction #{auction.pk} '{auction.title}' — Winner: {auction.winner_name} (₹{auction.current_price})"
                 ))
             else:
                 self.stdout.write(self.style.WARNING(
-                    f"✓ Closed Auction #{auction.pk} '{auction.title}' — No bids placed (Reserve: ${auction.current_price})"
+                    f"✓ Closed Auction #{auction.pk} '{auction.title}' — No bids placed (Reserve: ₹{auction.current_price})"
                 ))
 

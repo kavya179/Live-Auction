@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const currentPrice = parseFloat(currentPriceEl.textContent.replace(/[^0-9.]/g, ''));
                 if (!isNaN(currentPrice) && amount <= currentPrice) {
                     event.preventDefault(); amountInput.focus();
-                    alert('Your bid ($' + amount.toFixed(2) + ') must be greater than current price ($' + currentPrice.toFixed(2) + ').');
+                    alert('Your bid (₹' + amount.toFixed(2) + ') must be greater than current price (₹' + currentPrice.toFixed(2) + ').');
                 }
             }
         });

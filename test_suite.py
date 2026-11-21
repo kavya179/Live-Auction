@@ -57,7 +57,7 @@ def run_tests():
     a1.refresh_from_db()
     assert float(a1.current_price) == 150.00, f"Expected 150.00, got {a1.current_price}"
     assert a1.auction_bids.filter(bidder_name="Alice High", amount=150.00, accepted=True).exists()
-    print("  PASS: Higher bid ($150.00) accepted, current_price updated.")
+    print("  PASS: Higher bid (₹150.00) accepted, current_price updated.")
 
     # -------------------------------------------------------------
     # Scenario 2: Lower bid gets rejected
@@ -71,7 +71,7 @@ def run_tests():
     a1.refresh_from_db()
     assert float(a1.current_price) == 150.00, f"Expected 150.00, got {a1.current_price}"
     assert not a1.auction_bids.filter(bidder_name="Bob Low").exists()
-    print("  PASS: Lower bid ($120.00) rejected, current_price remained $150.00.")
+    print("  PASS: Lower bid (₹120.00) rejected, current_price remained ₹150.00.")
 
     # -------------------------------------------------------------
     # Scenario 3: Equal bid gets rejected
@@ -85,7 +85,7 @@ def run_tests():
     a1.refresh_from_db()
     assert float(a1.current_price) == 150.00
     assert not a1.auction_bids.filter(bidder_name="Charlie Equal").exists()
-    print("  PASS: Equal bid ($150.00) rejected, current_price remained $150.00.")
+    print("  PASS: Equal bid (₹150.00) rejected, current_price remained ₹150.00.")
 
     # -------------------------------------------------------------
     # Scenario 4: Bid during final 30 seconds extends auction by 30 seconds
@@ -185,7 +185,7 @@ def run_tests():
     for i in range(len(accepted_bids) - 1):
         assert accepted_bids[i].amount < accepted_bids[i+1].amount, "Accepted bids must be strictly ascending"
 
-    print(f"  PASS: {len(accepted_bids)} bids accepted in strict order. Final price: ${a6.current_price} (Uncorrupted).")
+    print(f"  PASS: {len(accepted_bids)} bids accepted in strict order. Final price: ₹{a6.current_price} (Uncorrupted).")
 
     # -------------------------------------------------------------
     # Scenario 7: Exactly one winner is declared
@@ -208,7 +208,7 @@ def run_tests():
     assert finalized7.status == "CLOSED"
     assert finalized7.winner_name == "Bidder Beta", f"Expected Bidder Beta, got {finalized7.winner_name}"
     assert float(finalized7.current_price) == 450.00
-    print(f"  PASS: Exactly one winner declared ({finalized7.winner_name}) at ${finalized7.current_price}.")
+    print(f"  PASS: Exactly one winner declared ({finalized7.winner_name}) at ₹{finalized7.current_price}.")
 
     # -------------------------------------------------------------
     # Scenario 8: Auction with no bids closes correctly
@@ -271,7 +271,7 @@ def run_tests():
     assert adm_auction is not None
     assert float(adm_auction.starting_price) == 8000.00
     assert float(adm_auction.current_price) == 8000.00, "current_price should initialize from starting_price"
-    print(f"  PASS: Admin created Auction #{adm_auction.pk}: '{adm_auction.title}' (${adm_auction.current_price}).")
+    print(f"  PASS: Admin created Auction #{adm_auction.pk}: '{adm_auction.title}' (₹{adm_auction.current_price}).")
 
     # 3. Admin can edit auction details
     print("\n[Admin 3] Admin can edit auction details...")

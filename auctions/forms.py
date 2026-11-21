@@ -106,12 +106,12 @@ class PlaceBidForm(forms.Form):
             'class':       'form-input',
             'min':         '0.01',
             'step':        '0.01',
-            'placeholder': 'Your bid amount in $',
+            'placeholder': 'Your bid amount in ₹',
         }),
         error_messages={
             'required':   'Please enter a bid amount.',
             'invalid':    'Enter a valid number (e.g. 150.00).',
-            'min_value':  'Bid must be at least $0.01.',
+            'min_value':  'Bid must be at least ₹0.01.',
         },
     )
 

@@ -146,8 +146,8 @@ def place_bid(request, pk):
             if bid_amount <= locked_item.current_price:
                 messages.error(
                     request,
-                    f"Your bid (${bid_amount}) must exceed the current price "
-                    f"(${locked_item.current_price})."
+                    f"Your bid (₹{bid_amount}) must exceed the current price "
+                    f"(₹{locked_item.current_price})."
                 )
                 return redirect('auction_detail', pk=pk)
 
@@ -164,7 +164,7 @@ def place_bid(request, pk):
         messages.error(request, f"Could not process bid: {exc}")
         return redirect('auction_detail', pk=pk)
 
-    messages.success(request, f"🎉 Bid of ${bid_amount} placed successfully!")
+    messages.success(request, f"🎉 Bid of ₹{bid_amount} placed successfully!")
     return redirect('auction_detail', pk=pk)
 
 
@@ -253,7 +253,15 @@ def submit_bid(request, pk):
 
             now = timezone.now()
 
-            # 2. Check if expired or closed. If so, finalize and reject bid.
+            # 2a. Check if auction has not started yet
+            if now < auction.start_time:
+                messages.error(
+                    request,
+                    f"This auction has not started yet. Bidding opens at {auction.start_time.strftime('%b %d, %Y at %H:%M')}."
+                )
+                return redirect('auction_public_detail', pk=pk)
+
+            # 2b. Check if expired or closed. If so, finalize and reject bid.
             if auction.status == Auction.STATUS_CLOSED or now > auction.end_time:
                 Auction.finalize_if_expired(auction.pk)
                 messages.error(request, "This auction is CLOSED. No more bids can be accepted.")
@@ -263,8 +271,8 @@ def submit_bid(request, pk):
             if bid_amount <= auction.current_price:
                 messages.error(
                     request,
-                    f"Your bid (${bid_amount}) must be greater than the latest current price "
-                    f"(${auction.current_price}). Another bidder may have placed a bid just before you."
+                    f"Your bid (₹{bid_amount}) must be greater than the latest current price "
+                    f"(₹{auction.current_price}). Another bidder may have placed a bid just before you."
                 )
                 return redirect('auction_public_detail', pk=pk)
 
@@ -298,12 +306,12 @@ def submit_bid(request, pk):
     if sniping_extended:
         messages.success(
             request,
-            f"✅ Bid of ${bid_amount} accepted! ⏱️ Anti-sniping: auction extended by 30 seconds."
+            f"✅ Bid of ₹{bid_amount} accepted! ⏱️ Anti-sniping: auction extended by 30 seconds."
         )
     else:
         messages.success(
             request,
-            f"✅ Bid of ${bid_amount} accepted for '{auction.title}'!"
+            f"✅ Bid of ₹{bid_amount} accepted for '{auction.title}'!"
         )
     return redirect('auction_public_detail', pk=pk)
 

@@ -38,11 +38,11 @@
                     <div class="card-price-row">
                         <div>
                             <span class="price-label">Current Highest Price</span>
-                            <span class="price-value price-gold">${{ auction.current_price }}</span>
+                            <span class="price-value price-gold">₹{{ auction.current_price }}</span>
                         </div>
                         <div style="text-align: right;">
                             <span class="price-label">Starting</span>
-                            <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: 600;">${{ auction.starting_price }}</span>
+                            <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: 600;">₹{{ auction.starting_price }}</span>
                         </div>
                     </div>
 
@@ -60,7 +60,7 @@
 
                     {% if auction.status == 'CLOSED' and auction.winner_name %}
                         <div class="info-box" style="padding: 10px; margin-bottom: 12px; font-size: 0.82rem; background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.25); color: var(--gold);">
-                            🏆 Winner: <strong>{{ auction.winner_name }}</strong> ($${{ auction.current_price }})
+                            🏆 Winner: <strong>{{ auction.winner_name }}</strong> (₹{{ auction.current_price }})
                         </div>
                     {% endif %}
 

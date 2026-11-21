@@ -37,7 +37,7 @@
                 </div>
                 <div class="meta-item">
                     <span class="meta-label">Starting Price</span>
-                    <span class="meta-value">${{ item.starting_price }}</span>
+                    <span class="meta-value">₹{{ item.starting_price }}</span>
                 </div>
                 <div class="meta-item">
                     <span class="meta-label">Start Time</span>
@@ -66,7 +66,7 @@
         <!-- Current Price Box -->
         <div class="price-box">
             <div class="price-box-eyebrow">Current Highest Bid</div>
-            <div class="price-box-value" id="current-price">${{ item.current_price }}</div>
+            <div class="price-box-value" id="current-price">₹{{ item.current_price }}</div>
             <div class="price-box-count">{{ item.bids.count }} bid(s) placed</div>
         </div>
 
@@ -108,11 +108,11 @@
                 {% if user != item.seller %}
                     <div class="bid-form-box">
                         <h3>Place Your Bid</h3>
-                        <p class="bid-hint">Your bid must be greater than $<strong>{{ item.current_price }}</strong></p>
+                        <p class="bid-hint">Your bid must be greater than ₹<strong>{{ item.current_price }}</strong></p>
                         <form action="{% url 'place_bid' item.pk %}" method="post" id="bid-form">
                             {% csrf_token %}
                             <div class="form-group">
-                                <label for="{{ bid_form.amount.id_for_label }}">Bid Amount ($ USD)</label>
+                                <label for="{{ bid_form.amount.id_for_label }}">Bid Amount (₹ INR)</label>
                                 {{ bid_form.amount }}
                             </div>
                             <button type="submit" class="btn btn-primary btn-block btn-lg">🔨 Place Bid</button>
@@ -143,7 +143,7 @@
                     {% for bid in bids %}
                         <div class="bid-entry">
                             <span class="bid-user">{{ bid.bidder.username }}</span>
-                            <span class="bid-amount">${{ bid.amount }}</span>
+                            <span class="bid-amount">₹{{ bid.amount }}</span>
                             <span class="bid-time">{{ bid.timestamp|date:"H:i:s" }}</span>
                         </div>
                     {% endfor %}

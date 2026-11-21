@@ -1,10 +1,12 @@
 """
 Seed Script: Populates realistic, rich auction data for demonstration and evaluation.
-Includes:
-  - An auction ending in 90 seconds (ideal for demonstrating Anti-Sniping live!)
-  - High-value active auctions ending in 15 minutes, 2 hours, 24 hours, and 3 days
-  - Completed/Closed auctions with verified winners and bid logs
-  - Zero-bid reserve auction
+Features:
+  - Active auctions with diverse timing (75s for anti-sniping demo, 3m, 15m, 45m, 3h, 24h)
+  - Pre-seeded bid history
+  - Concurrency & anti-sniping ready
+  - Closed auctions with declared single winner
+  - Closed auction with zero bids (reserve held)
+  - All currency in Indian Rupees (₹)
 """
 
 import os
@@ -19,137 +21,196 @@ from auctions.models import Auction, AuctionBid
 
 
 def seed():
-    print("Seeding Live Auction Platform with realistic demo data...")
+    print("=" * 70)
+    print("Seeding Live Auction Platform with Fresh Demo Data & Timers (INR ₹)...")
+    print("=" * 70)
     now = timezone.now()
 
-    # 1. LIVE AUCTION — ANTI-SNIPING DEMO (Ends in ~90 seconds)
-    # Perfect for testing bidding in the final 30s and watching it extend!
-    a_snipe, created = Auction.objects.get_or_create(
-        title="🔥 1999 Pokémon 1st Edition Shadowless Charizard Holo #4 (PSA 10)",
-        defaults={
+    demos = [
+        # 1. LIVE AUCTION — ANTI-SNIPING DEMO (Ends in ~75 seconds)
+        {
+            'title': "🔥 Anti-Sniping Demo: 1999 Pokémon 1st Edition Charizard Holo #4 (PSA 10)",
             'description': (
                 "The holy grail of modern collectibles. Authenticated Gem Mint 10 by PSA. "
-                "Bids submitted within the final 30 seconds will trigger the 30-second anti-sniping extension."
+                "TIMING DEMO: This auction ends in ~75 seconds. Place a bid when the timer drops below "
+                "30 seconds to witness the 30-second anti-sniping extension live!"
             ),
-            'starting_price': 25000.00,
-            'current_price': 34500.00,
+            'starting_price': 250000.00,
+            'current_price': 345000.00,
             'start_time': now - timedelta(minutes=15),
-            'end_time': now + timedelta(seconds=90),  # Ends in 90s!
+            'end_time': now + timedelta(seconds=75),
             'status': Auction.STATUS_LIVE,
-        }
-    )
-    if created:
-        AuctionBid.objects.create(auction=a_snipe, bidder_name="Gary Vee", amount=28000.00, accepted=True)
-        AuctionBid.objects.create(auction=a_snipe, bidder_name="Logan Paul", amount=31500.00, accepted=True)
-        AuctionBid.objects.create(auction=a_snipe, bidder_name="Ken Goldin", amount=34500.00, accepted=True)
-        print("✓ Created: 90-second Anti-Sniping Showcase Auction")
+            'winner_name': '',
+            'bids': [
+                ("Aarav Sharma", 280000.00),
+                ("Vikramaditya Roy", 315000.00),
+                ("Ken Goldin Collectibles", 345000.00),
+            ]
+        },
 
-    # 2. LIVE AUCTION — HIGH CONCURRENCY SHOWCASE (Ends in 20 minutes)
-    a_car, created = Auction.objects.get_or_create(
-        title="🏎️ 1965 Shelby Cobra 427 S/C Roadster (Guardsman Blue)",
-        defaults={
+        # 2. LIVE AUCTION — VINTAGE MOTORCYCLE (Ends in 3 minutes)
+        {
+            'title': "🏍️ 1962 Royal Enfield Bullet 350 Original Cast Iron Engine (Restored)",
             'description': (
-                "Original CSX series competition roadster with aluminum body, side pipes, Halibrand knock-off wheels, "
-                "and documented continuous provenance in the official SAAC Registry."
+                "Flawlessly restored vintage 1962 Royal Enfield Bullet with matching original British-era "
+                "frame numbers, classic heavy flywheel, and pristine chrome detailing. Comes with original RC book."
             ),
-            'starting_price': 850000.00,
-            'current_price': 1120000.00,
+            'starting_price': 180000.00,
+            'current_price': 240000.00,
+            'start_time': now - timedelta(hours=1),
+            'end_time': now + timedelta(minutes=3),
+            'status': Auction.STATUS_LIVE,
+            'winner_name': '',
+            'bids': [
+                ("Kabir Mehta", 195000.00),
+                ("Devansh Singhania", 215000.00),
+                ("Rajeshwar Rao", 240000.00),
+            ]
+        },
+
+        # 3. LIVE AUCTION — CRICKET MEMORABILIA (Ends in 15 minutes)
+        {
+            'title': "🏏 Sachin Tendulkar 2011 ICC World Cup Match-Used Signed MRF Bat",
+            'description': (
+                "Iconic match-used MRF Genius bat signed by Sachin Tendulkar during the historic 2011 "
+                "ICC Cricket World Cup campaign. Complete with BCCI certificate of authenticity and hologram."
+            ),
+            'starting_price': 500000.00,
+            'current_price': 725000.00,
             'start_time': now - timedelta(hours=2),
-            'end_time': now + timedelta(minutes=20),
+            'end_time': now + timedelta(minutes=15),
             'status': Auction.STATUS_LIVE,
-        }
-    )
-    if created:
-        AuctionBid.objects.create(auction=a_car, bidder_name="Jay Leno Collectibles", amount=920000.00, accepted=True)
-        AuctionBid.objects.create(auction=a_car, bidder_name="Peterson Heritage Trust", amount=1050000.00, accepted=True)
-        AuctionBid.objects.create(auction=a_car, bidder_name="Velocity Holdings Ltd", amount=1120000.00, accepted=True)
-        print("✓ Created: 20-minute Cobra Roadster Auction")
+            'winner_name': '',
+            'bids': [
+                ("Rohan Gavaskar", 550000.00),
+                ("Sunil Varma", 620000.00),
+                ("Ananya Birla", 725000.00),
+            ]
+        },
 
-    # 3. LIVE AUCTION — LUXURY HOROLOGY (Ends in 2 hours)
-    a_watch, created = Auction.objects.get_or_create(
-        title="⌚ 1968 Rolex Cosmograph Daytona Ref. 6239 'Paul Newman'",
-        defaults={
+        # 4. LIVE AUCTION — LUXURY JEWELRY (Ends in 45 minutes)
+        {
+            'title': "💎 Rare Kashmir Cornflower Blue Sapphire 5.2 Carat Diamond Ring",
             'description': (
-                "Highly sought-after white exotic dial with art deco font, stepped subsidiary dials, and pristine "
-                "unpolished stainless steel case. Accompanied by original guarantee certificate and inner/outer presentation box."
+                "Unheated certified Kashmir blue sapphire displaying the coveted velvety cornflower hue, "
+                "flanked by trapezoid VVS1 diamonds mounted in platinum. Certified by SSEF and Gübelin."
             ),
-            'starting_price': 140000.00,
-            'current_price': 185000.00,
-            'start_time': now - timedelta(hours=4),
-            'end_time': now + timedelta(hours=2),
+            'starting_price': 1200000.00,
+            'current_price': 1650000.00,
+            'start_time': now - timedelta(hours=3),
+            'end_time': now + timedelta(minutes=45),
             'status': Auction.STATUS_LIVE,
-        }
-    )
-    if created:
-        AuctionBid.objects.create(auction=a_watch, bidder_name="Geneva Timepiece Vault", amount=155000.00, accepted=True)
-        AuctionBid.objects.create(auction=a_watch, bidder_name="Sebastian Mercer", amount=170000.00, accepted=True)
-        AuctionBid.objects.create(auction=a_watch, bidder_name="Aurelie Dupont", amount=185000.00, accepted=True)
-        print("✓ Created: 2-hour Paul Newman Daytona Auction")
+            'winner_name': '',
+            'bids': [
+                ("Priya Oberoi", 1350000.00),
+                ("Harshavardhan Goenka", 1500000.00),
+                ("Zoya Akhtar", 1650000.00),
+            ]
+        },
 
-    # 4. LIVE AUCTION — TECH HISTORY (Ends in 24 hours)
-    a_tech, created = Auction.objects.get_or_create(
-        title="💻 1976 Operational Apple-1 Computer (Board #01-0025)",
-        defaults={
+        # 5. LIVE AUCTION — VINTAGE CAR (Ends in 3 hours)
+        {
+            'title': "🏎️ 1965 Shelby Cobra 427 S/C Roadster (Guardsman Blue)",
             'description': (
-                "Hand-assembled in Steve Jobs' garage. Original motherboard, period Sanyo monitor, Datanetics keyboard, "
-                "Cassette Interface, and original operation manual inscribed by Steve Wozniak."
+                "Original CSX series competition roadster with aluminum body, side pipes, Halibrand "
+                "knock-off wheels, and documented continuous provenance in the official SAAC Registry."
             ),
-            'starting_price': 350000.00,
-            'current_price': 420000.00,
-            'start_time': now - timedelta(hours=6),
+            'starting_price': 65000000.00,
+            'current_price': 84000000.00,
+            'start_time': now - timedelta(hours=5),
+            'end_time': now + timedelta(hours=3),
+            'status': Auction.STATUS_LIVE,
+            'winner_name': '',
+            'bids': [
+                ("Peterson Heritage Fund", 70000000.00),
+                ("Velocity Holdings Ltd", 78000000.00),
+                ("Vijay Mallya Collection Trust", 84000000.00),
+            ]
+        },
+
+        # 6. LIVE AUCTION — TECH HISTORY (Ends in 24 hours)
+        {
+            'title': "💻 1976 Operational Apple-1 Computer (Board #01-0025)",
+            'description': (
+                "Hand-assembled in Steve Jobs' garage. Original motherboard, period Sanyo monitor, "
+                "Datanetics keyboard, Cassette Interface, and manual inscribed by Steve Wozniak."
+            ),
+            'starting_price': 28000000.00,
+            'current_price': 35000000.00,
+            'start_time': now - timedelta(hours=10),
             'end_time': now + timedelta(hours=24),
             'status': Auction.STATUS_LIVE,
-        }
-    )
-    if created:
-        AuctionBid.objects.create(auction=a_tech, bidder_name="Computer History Archives", amount=380000.00, accepted=True)
-        AuctionBid.objects.create(auction=a_tech, bidder_name="Silicon Pioneer Fund", amount=420000.00, accepted=True)
-        print("✓ Created: 24-hour Apple-1 Computer Auction")
+            'winner_name': '',
+            'bids': [
+                ("Silicon Pioneer Fund", 31000000.00),
+                ("Museum of Computing History", 35000000.00),
+            ]
+        },
 
-    # 5. CLOSED AUCTION — WINNER SHOWCASE
-    a_closed1, created = Auction.objects.get_or_create(
-        title="🏆 1996 Michael Jordan NBA Finals Game 6 Championship Jersey",
-        defaults={
+        # 7. CLOSED AUCTION — WINNER SHOWCASE
+        {
+            'title': "🏆 1996 Michael Jordan NBA Finals Game 6 Championship Jersey",
             'description': (
-                "Official road red Chicago Bulls jersey worn by Michael Jordan during the 1996 NBA Finals clincher against Seattle. "
-                "MeiGray dual photo match and letter of provenance."
+                "Official road red Chicago Bulls jersey worn by Michael Jordan during the 1996 NBA Finals clincher. "
+                "MeiGray dual photo match and letter of provenance. Auction successfully finalized."
             ),
-            'starting_price': 80000.00,
-            'current_price': 245000.00,
+            'starting_price': 6000000.00,
+            'current_price': 18500000.00,
             'start_time': now - timedelta(days=5),
-            'end_time': now - timedelta(hours=2),
+            'end_time': now - timedelta(hours=4),
             'status': Auction.STATUS_CLOSED,
             'winner_name': "David K. Harrison",
-        }
-    )
-    if created:
-        AuctionBid.objects.create(auction=a_closed1, bidder_name="Chris Paulson", amount=120000.00, accepted=True)
-        AuctionBid.objects.create(auction=a_closed1, bidder_name="Anthony Wright", amount=195000.00, accepted=True)
-        AuctionBid.objects.create(auction=a_closed1, bidder_name="David K. Harrison", amount=245000.00, accepted=True)
-        print("✓ Created: Closed Auction with Declared Winner")
+            'bids': [
+                ("Chris Paulson", 9500000.00),
+                ("Anthony Wright", 14000000.00),
+                ("David K. Harrison", 18500000.00),
+            ]
+        },
 
-    # 6. CLOSED AUCTION — NO-BIDS RESERVE SHOWCASE
-    a_closed2, created = Auction.objects.get_or_create(
-        title="🎨 1974 Monumental Brutalist Bronze Fountain Sculpture",
-        defaults={
+        # 8. CLOSED AUCTION — NO-BIDS RESERVE SHOWCASE
+        {
+            'title': "🎨 1974 Monumental Brutalist Bronze Fountain Sculpture",
             'description': (
-                "Architectural bronze casting from the private estate of the mid-century sculptor. Reserve not met; "
-                "closed with zero accepted bids."
+                "Architectural bronze casting from the private estate of the mid-century sculptor. "
+                "Reserve price was not met before expiry; closed cleanly with zero accepted bids."
             ),
-            'starting_price': 18000.00,
-            'current_price': 18000.00,
+            'starting_price': 1400000.00,
+            'current_price': 1400000.00,
             'start_time': now - timedelta(days=3),
-            'end_time': now - timedelta(hours=6),
+            'end_time': now - timedelta(hours=8),
             'status': Auction.STATUS_CLOSED,
             'winner_name': "",
-        }
-    )
-    if created:
-        print("✓ Created: Closed Auction with Zero Bids (Reserve Held)")
+            'bids': []
+        },
+    ]
 
-    print("\n🎉 Seed data populated successfully!")
+    for item in demos:
+        bids_to_create = item.pop('bids')
+        title = item.pop('title')
+        auction, created = Auction.objects.update_or_create(
+            title=title,
+            defaults=item,
+        )
+        action = "Created" if created else "Updated"
+        rem_sec = (auction.end_time - now).total_seconds()
+        rem_str = f"{rem_sec:.0f}s remaining" if rem_sec > 0 else "Expired/Closed"
+        print(f"✓ {action} [{auction.status}]: '{auction.title[:45]}' | Price: ₹{auction.current_price:,.2f} | {rem_str}")
+
+        # Seed or refresh bids
+        if created or auction.auction_bids.count() == 0:
+            for bidder_name, amount in bids_to_create:
+                AuctionBid.objects.create(
+                    auction=auction,
+                    bidder_name=bidder_name,
+                    amount=amount,
+                    accepted=True,
+                )
+
+    print("-" * 70)
     print(f"Total Auctions in Database: {Auction.objects.count()}")
     print(f"Total Bids in Database: {AuctionBid.objects.count()}")
+    print("✓ All currencies set to Indian Rupee (₹).")
+    print("=" * 70)
 
 
 if __name__ == '__main__':

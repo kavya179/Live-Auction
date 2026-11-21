@@ -21,7 +21,7 @@
         </div>
         <div class="hero-stats">
             <div class="hero-stat-item">
-                <span class="hero-stat-value">${{ available_auctions|length }}</span>
+                <span class="hero-stat-value">{{ available_auctions|length }}</span>
                 <span class="hero-stat-label">Active Auctions</span>
             </div>
             <div class="hero-stat-item">
@@ -79,11 +79,11 @@
                         <div class="card-price-row">
                             <div>
                                 <span class="price-label">Current Highest Price</span>
-                                <span class="price-value price-gold">${{ auction.current_price }}</span>
+                                <span class="price-value price-gold">₹{{ auction.current_price }}</span>
                             </div>
                             <div style="text-align: right;">
                                 <span class="price-label">Starting Price</span>
-                                <span style="font-size: 0.95rem; color: var(--text-muted); font-weight: 600;">${{ auction.starting_price }}</span>
+                                <span style="font-size: 0.95rem; color: var(--text-muted); font-weight: 600;">₹{{ auction.starting_price }}</span>
                             </div>
                         </div>
 
@@ -149,7 +149,7 @@
                     <div class="card-price-row">
                         <div>
                             <span class="price-label">Current Bid</span>
-                            <span class="price-value">${{ item.current_price }}</span>
+                            <span class="price-value">₹{{ item.current_price }}</span>
                         </div>
                         <div style="text-align: right;">
                             <span class="price-label">Seller</span>

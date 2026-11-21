@@ -1,0 +1,22 @@
+"""
+ASGI config for LiveAuction project.
+Supports both HTTP and WebSocket connections.
+"""
+
+import os
+from django.core.asgi import get_asgi_application
+from channels.routing import ProtocolTypeRouter, URLRouter
+from channels.auth import AuthMiddlewareStack
+import auctions.routing
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+
+application = ProtocolTypeRouter({
+    "http": get_asgi_application(),
+    "websocket": AuthMiddlewareStack(
+        URLRouter(
+            auctions.routing.websocket_urlpatterns
+        )
+    ),
+})
+

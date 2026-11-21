@@ -1,0 +1,393 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ auction.title }} — Live Auction Details{% endblock %}
+
+{% block content %}
+<div class="detail-container">
+
+    <!-- Left Column: Product Title, Description, Meta & Winner Section -->
+    <div class="detail-left">
+        <div class="detail-img-placeholder" style="height: 360px;">
+            <div style="font-size: 0.75rem; color: var(--gold-light); font-family: 'DM Mono', monospace; letter-spacing: 1.5px; text-transform: uppercase;">Lot {{ auction.pk }} · Live Auction</div>
+            <div style="font-size: 1rem; color: var(--text-primary); font-weight: 600; margin-top: 8px;">A considered object, waiting for its next collection.</div>
+        </div>
+
+        <div class="detail-info">
+            <div class="detail-badges" id="status-badges-container">
+                {% if auction.status == 'LIVE' %}
+                    <span class="badge badge-live" id="main-status-badge">
+                        <span class="live-dot"></span> LIVE AUCTION
+                    </span>
+                {% else %}
+                    <span class="badge badge-closed" id="main-status-badge">AUCTION CLOSED</span>
+                {% endif %}
+                <span class="badge" style="background: rgba(37,99,235,0.15); color: var(--blue-300); border: 1px solid rgba(37,99,235,0.3);">
+                    Verified Listing
+                </span>
+            </div>
+
+            <!-- Product Title -->
+            <h1 class="detail-title">{{ auction.title }}</h1>
+
+            <!-- Product Description -->
+            <p class="detail-desc">{{ auction.description }}</p>
+
+            <!-- Metadata Cards -->
+            <div class="detail-meta-grid">
+                <div class="meta-item">
+                    <span class="meta-label">Starting Price</span>
+                    <span class="meta-value">${{ auction.starting_price }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Total Accepted Bids</span>
+                    <span class="meta-value" id="meta-total-bids">{{ auction.auction_bids.count }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Auction Start Time</span>
+                    <span class="meta-value">{{ auction.start_time|date:"M d, Y H:i" }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Auction End Time</span>
+                    <span class="meta-value" id="meta-end-time">{{ auction.end_time|date:"M d, Y H:i" }}</span>
+                </div>
+            </div>
+
+            <!-- Winner Section (Prominently displayed when closed or winner exists) -->
+            <div id="winner-section-container" {% if auction.status != 'CLOSED' %}style="display: none;"{% endif %}>
+                <div class="winner-box">
+                    <span class="winner-trophy">🏆</span>
+                    <div class="winner-label">Official Auction Result</div>
+                    <div class="winner-name" id="winner-name-display">{{ auction.winner_name|default:"No Winner" }}</div>
+                    <div class="winner-price">
+                        Won with final auction price: <strong id="winner-price-display">${{ auction.current_price }}</strong>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 0.78rem; color: var(--text-dim);" id="winner-closed-time">
+                        Auction Closed on {{ auction.end_time|date:"M d, Y at H:i" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Bidding Panel & Recent Bidding History -->
+    <div class="detail-right">
+
+        <!-- Current Bidding Price -->
+        <div class="price-box">
+            <div class="price-box-eyebrow">Current Highest Price</div>
+            <div class="price-box-value" id="current-price-val">${{ auction.current_price }}</div>
+            <div class="price-box-count" id="price-box-count">
+                {% if auction.status == 'LIVE' %}
+                    Highest price accepted &bull; <span id="price-box-bids-count">{{ auction.auction_bids.count }}</span> total bid(s)
+                {% else %}
+                    Final Auction Price &bull; Bidding Finished
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Countdown Timer -->
+        <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px; margin-bottom: 16px; text-align: center;">
+            <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;" id="countdown-header-label">
+                {% if auction.status == 'LIVE' %}Time Remaining To Bid{% else %}Auction Status{% endif %}
+            </div>
+            
+            <div id="countdown-wrapper">
+                {% if auction.status == 'LIVE' %}
+                    <div class="countdown-box" id="detail-countdown" data-countdown="{{ auction.end_time|date:'c' }}">
+                        <div class="countdown-unit">
+                            <span class="countdown-num cd-days">00</span>
+                            <span class="countdown-label">Days</span>
+                        </div>
+                        <div class="countdown-unit">
+                            <span class="countdown-num cd-hours">00</span>
+                            <span class="countdown-label">Hours</span>
+                        </div>
+                        <div class="countdown-unit">
+                            <span class="countdown-num cd-mins">00</span>
+                            <span class="countdown-label">Mins</span>
+                        </div>
+                        <div class="countdown-unit">
+                            <span class="countdown-num cd-secs">00</span>
+                            <span class="countdown-label">Secs</span>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="closed-banner" style="margin-bottom: 0;">
+                        <span style="color: var(--text-primary); font-weight: 600;">✅ Auction Closed</span>
+                        <p style="font-size: 0.8rem; margin-top: 4px; color: var(--text-dim);">No further bids can be accepted for this item.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Bid Placement Form & Status Wrapper -->
+        <div id="bid-area-container">
+            {% if auction.status == 'LIVE' %}
+                <div class="bid-form-box" id="active-bid-form-box">
+                    <h3>Place Your Bid</h3>
+                    <p class="bid-hint">Minimum required bid: &gt; $<strong id="bid-hint-price">{{ auction.current_price }}</strong></p>
+
+                    <form action="{% url 'submit_bid' auction.pk %}" method="post" id="bid-form">
+                        {% csrf_token %}
+
+                        <div class="form-group">
+                            <label for="{{ bid_form.bidder_name.id_for_label }}">Bidder Name *</label>
+                            {{ bid_form.bidder_name }}
+                            {% if bid_form.bidder_name.errors %}
+                                <span class="error-text">{{ bid_form.bidder_name.errors|join:", " }}</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ bid_form.amount.id_for_label }}">Bid Amount ($ USD) *</label>
+                            {{ bid_form.amount }}
+                            {% if bid_form.amount.errors %}
+                                <span class="error-text">{{ bid_form.amount.errors|join:", " }}</span>
+                            {% endif %}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block btn-lg" id="submit-bid-btn">
+                            🔨 Place Bid Now
+                        </button>
+                    </form>
+                    <div style="font-size: 0.75rem; color: var(--text-dim); text-align: center; margin-top: 10px;">
+                        🛡️ Protected by atomic database transaction &amp; row-level lock.
+                    </div>
+                </div>
+            {% else %}
+                <div class="winner-box" id="side-winner-box">
+                    <span class="winner-trophy" style="font-size: 2rem;">🏆</span>
+                    <div class="winner-label">Winner Declared</div>
+                    <div class="winner-name" style="font-size: 1.2rem;" id="side-winner-name">{{ auction.winner_name|default:"No Winner" }}</div>
+                    <div class="winner-price">Final Price: <strong id="side-winner-price">${{ auction.current_price }}</strong></div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Recent Bidding History -->
+        <div class="bid-history">
+            <div class="bid-history-header">
+                <h3>Recent Bidding History</h3>
+                <span class="bid-count-pill" id="history-bids-count">{{ auction.auction_bids.count }} total</span>
+            </div>
+
+            <div id="bid-list">
+                {% if bids %}
+                    {% for bid in bids %}
+                        <div class="bid-entry">
+                            <div class="bid-user">
+                                {{ bid.bidder_name }}
+                            </div>
+                            <div class="bid-amount">
+                                ${{ bid.amount }}
+                            </div>
+                            <div class="bid-time">
+                                {% if bid.accepted %}
+                                    <span style="color: var(--green); font-weight: 700;">✓ Accepted</span>
+                                {% else %}
+                                    <span style="color: var(--red);">✗ Outbid</span>
+                                {% endif %}
+                                &bull; {{ bid.created_at|date:"H:i:s" }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="no-bids">No bids placed yet. Be the first bidder!</p>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/**
+ * Real-Time Polling Engine for LiveAuction
+ * Uses JavaScript fetch() to refresh auction state every 2 seconds.
+ * Automatically updates:
+ *   - Current highest price (with pulse/flash effect)
+ *   - Countdown timer using server-provided end time
+ *   - Auction status (LIVE / CLOSED)
+ *   - Total accepted bids count
+ *   - Winner section when auction closes
+ *   - Recent bidding history
+ */
+(function() {
+    const auctionId = {{ auction.pk }};
+    const apiUrl = "{% url 'auction_status_api' auction.pk %}";
+
+    let previousPrice = parseFloat("{{ auction.current_price }}");
+    let serverEndTime = new Date("{{ auction.end_time|date:'c' }}").getTime();
+    let currentStatus = "{{ auction.status }}";
+
+    // 1. Function to update countdown using the server-provided end time
+    function updateCountdownDisplay() {
+        const now = new Date().getTime();
+        const diff = serverEndTime - now;
+
+        const countdownBox = document.getElementById('detail-countdown');
+        if (!countdownBox) return;
+
+        if (diff <= 0 || currentStatus === 'CLOSED') {
+            const wrapper = document.getElementById('countdown-wrapper');
+            if (wrapper && !wrapper.querySelector('.closed-banner')) {
+                wrapper.innerHTML = `
+                    <div class="closed-banner" style="margin-bottom: 0;">
+                        <span style="color: var(--text-primary); font-weight: 600;">✅ Auction Closed</span>
+                        <p style="font-size: 0.8rem; margin-top: 4px; color: var(--text-dim);">No further bids can be accepted for this item.</p>
+                    </div>
+                `;
+            }
+            const label = document.getElementById('countdown-header-label');
+            if (label) label.textContent = 'Auction Status';
+            return;
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+        const daysEl = countdownBox.querySelector('.cd-days');
+        const hoursEl = countdownBox.querySelector('.cd-hours');
+        const minsEl = countdownBox.querySelector('.cd-mins');
+        const secsEl = countdownBox.querySelector('.cd-secs');
+
+        if (daysEl) daysEl.textContent = String(days).padStart(2, '0');
+        if (hoursEl) hoursEl.textContent = String(hours).padStart(2, '0');
+        if (minsEl) minsEl.textContent = String(minutes).padStart(2, '0');
+        if (secsEl) secsEl.textContent = String(seconds).padStart(2, '0');
+    }
+
+    // 2. Fetch function to poll the JSON API endpoint every 2 seconds
+    function fetchAuctionStatus() {
+        fetch(apiUrl, {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(function(response) {
+            if (!response.ok) throw new Error('Network error fetching auction status');
+            return response.json();
+        })
+        .then(function(data) {
+            // A. Update server end time
+            if (data.end_time) {
+                serverEndTime = new Date(data.end_time).getTime();
+            }
+
+            // B. Update current price with highlight animation if changed
+            const newPrice = parseFloat(data.current_price);
+            const priceEl = document.getElementById('current-price-val');
+            if (priceEl && newPrice !== previousPrice) {
+                priceEl.textContent = '$' + newPrice.toFixed(2);
+                priceEl.classList.add('price-flash');
+                setTimeout(function() {
+                    priceEl.classList.remove('price-flash');
+                }, 1200);
+
+                // Update bid input hint
+                const hintPrice = document.getElementById('bid-hint-price');
+                if (hintPrice) hintPrice.textContent = newPrice.toFixed(2);
+
+                previousPrice = newPrice;
+            }
+
+            // C. Update Bid counts
+            const totalBids = data.total_accepted_bids;
+            const metaTotal = document.getElementById('meta-total-bids');
+            if (metaTotal) metaTotal.textContent = totalBids;
+
+            const priceBoxBids = document.getElementById('price-box-bids-count');
+            if (priceBoxBids) priceBoxBids.textContent = totalBids;
+
+            const historyPill = document.getElementById('history-bids-count');
+            if (historyPill) historyPill.textContent = totalBids + ' total';
+
+            // D. Update Status & Badges
+            currentStatus = data.status;
+            const statusBadge = document.getElementById('main-status-badge');
+            if (statusBadge) {
+                if (data.status === 'LIVE') {
+                    statusBadge.className = 'badge badge-live';
+                    statusBadge.innerHTML = '<span class="live-dot"></span> LIVE AUCTION';
+                } else {
+                    statusBadge.className = 'badge badge-closed';
+                    statusBadge.textContent = 'AUCTION CLOSED';
+                }
+            }
+
+            // E. When auction closes, show Winner automatically!
+            if (data.status === 'CLOSED') {
+                // Show left-side Winner box
+                const winnerContainer = document.getElementById('winner-section-container');
+                if (winnerContainer) {
+                    winnerContainer.style.display = 'block';
+                    const winnerNameEl = document.getElementById('winner-name-display');
+                    if (winnerNameEl) winnerNameEl.textContent = data.winner_name || 'No Winner';
+                    const winnerPriceEl = document.getElementById('winner-price-display');
+                    if (winnerPriceEl) winnerPriceEl.textContent = '$' + parseFloat(data.current_price).toFixed(2);
+                }
+
+                // Replace bid form with Winner Box on right column
+                const bidArea = document.getElementById('bid-area-container');
+                if (bidArea && !document.getElementById('side-winner-box')) {
+                    bidArea.innerHTML = `
+                        <div class="winner-box" id="side-winner-box">
+                            <span class="winner-trophy" style="font-size: 2rem;">🏆</span>
+                            <div class="winner-label">Winner Declared</div>
+                            <div class="winner-name" style="font-size: 1.2rem;">${data.winner_name || 'No Winner'}</div>
+                            <div class="winner-price">Final Price: <strong>$${parseFloat(data.current_price).toFixed(2)}</strong></div>
+                        </div>
+                    `;
+                }
+
+                // Update price box subtitle
+                const priceBoxCount = document.getElementById('price-box-count');
+                if (priceBoxCount) {
+                    priceBoxCount.textContent = 'Final Auction Price • Bidding Finished';
+                }
+            }
+
+            // F. Update Recent Bids list dynamically if bids returned
+            if (data.recent_bids && data.recent_bids.length > 0) {
+                const bidListEl = document.getElementById('bid-list');
+                if (bidListEl) {
+                    let html = '';
+                    data.recent_bids.forEach(function(bid) {
+                        const statusTag = bid.accepted
+                            ? '<span style="color: var(--green); font-weight: 700;">✓ Accepted</span>'
+                            : '<span style="color: var(--red);">✗ Outbid</span>';
+                        html += `
+                            <div class="bid-entry">
+                                <div class="bid-user">${bid.bidder_name}</div>
+                                <div class="bid-amount">$${parseFloat(bid.amount).toFixed(2)}</div>
+                                <div class="bid-time">${statusTag} &bull; ${bid.created_at}</div>
+                            </div>
+                        `;
+                    });
+                    bidListEl.innerHTML = html;
+                }
+            }
+
+            // Re-render countdown based on updated server end time & status
+            updateCountdownDisplay();
+        })
+        .catch(function(err) {
+            console.warn('Live auction poll error:', err);
+        });
+    }
+
+    // Run countdown tick every second
+    setInterval(updateCountdownDisplay, 1000);
+    updateCountdownDisplay();
+
+    // Poll server API every 2 seconds
+    setInterval(fetchAuctionStatus, 2000);
+
+})();
+</script>
+{% endblock %}

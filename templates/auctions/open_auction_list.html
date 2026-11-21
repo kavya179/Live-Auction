@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block title %}Live Auctions — Real-Time Bidding{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>🔴 Live &amp; Open Auctions</h1>
+    <p>Browse active auctions, monitor highest bids in real-time, and place bids instantly.</p>
+</div>
+
+<div class="filter-tabs">
+    <a href="{% url 'auction_public_list' %}" class="tab {% if status_filter == 'all' %}active{% endif %}">All Auctions</a>
+    <a href="?status=LIVE"   class="tab {% if status_filter == 'LIVE' %}active{% endif %}">🔴 Live Now</a>
+    <a href="?status=CLOSED" class="tab {% if status_filter == 'CLOSED' %}active{% endif %}">✅ Closed / Winners</a>
+</div>
+
+{% if auctions %}
+    <div class="auction-grid">
+        {% for auction in auctions %}
+            <div class="auction-card {% if auction.status == 'LIVE' %}card-live{% endif %}">
+                <div class="auction-card-visual visual-{{ forloop.counter0 }}"></div>
+                <div class="card-body">
+                    <div class="card-badges">
+                        {% if auction.status == 'LIVE' %}
+                            <span class="badge badge-live">
+                                <span class="live-dot"></span> LIVE
+                            </span>
+                        {% else %}
+                            <span class="badge badge-closed">CLOSED</span>
+                        {% endif %}
+                        {% if auction.winner_name %}
+                            <span class="badge badge-winner">🏆 {{ auction.winner_name }}</span>
+                        {% endif %}
+                    </div>
+
+                    <h3 class="card-title">{{ auction.title }}</h3>
+                    <p class="card-desc">{{ auction.description|truncatechars:100 }}</p>
+
+                    <div class="card-price-row">
+                        <div>
+                            <span class="price-label">Current Highest Price</span>
+                            <span class="price-value price-gold">${{ auction.current_price }}</span>
+                        </div>
+                        <div style="text-align: right;">
+                            <span class="price-label">Starting</span>
+                            <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: 600;">${{ auction.starting_price }}</span>
+                        </div>
+                    </div>
+
+                    <div class="card-meta">
+                        <div>
+                            <span style="color: var(--text-dim);">Ends:</span>
+                            <span style="font-weight: 600; color: var(--text-primary);" data-countdown="{{ auction.end_time|date:'c' }}">
+                                {{ auction.end_time|date:"M d, H:i" }}
+                            </span>
+                        </div>
+                        <div>
+                            <span>{{ auction.auction_bids.count }} bid(s)</span>
+                        </div>
+                    </div>
+
+                    {% if auction.status == 'CLOSED' and auction.winner_name %}
+                        <div class="info-box" style="padding: 10px; margin-bottom: 12px; font-size: 0.82rem; background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.25); color: var(--gold);">
+                            🏆 Winner: <strong>{{ auction.winner_name }}</strong> ($${{ auction.current_price }})
+                        </div>
+                    {% endif %}
+
+                    <a href="{% url 'auction_public_detail' auction.pk %}" class="btn btn-primary btn-block">
+                        {% if auction.status == 'LIVE' %}
+                            🔨 View Auction &amp; Bid
+                        {% else %}
+                            👁️ View Final Result
+                        {% endif %}
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">🏷️</div>
+        <h3>No auctions found</h3>
+        <p>There are no auctions matching this filter right now.</p>
+    </div>
+{% endif %}
+{% endblock %}

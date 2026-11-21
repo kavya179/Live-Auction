@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Watchlist — LiveAuction{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>❤️ Your Watchlist</h1>
+    <p>Items you're keeping an eye on.</p>
+</div>
+
+{% if watched_items %}
+    <div class="auction-grid">
+        {% for watch in watched_items %}
+            {% with item=watch.item %}
+                <div class="auction-card">
+                    {% if item.image %}
+                        <img src="{{ item.image.url }}" alt="{{ item.title }}" class="card-img">
+                    {% else %}
+                        <div class="card-img-placeholder">🖼️</div>
+                    {% endif %}
+                    <div class="card-body">
+                        {% if item.status == 'live' %}
+                            <span class="badge badge-live">🔴 LIVE</span>
+                        {% elif item.status == 'upcoming' %}
+                            <span class="badge badge-upcoming">⏳ Upcoming</span>
+                        {% else %}
+                            <span class="badge badge-ended">✅ Ended</span>
+                        {% endif %}
+                        <h3 class="card-title">{{ item.title }}</h3>
+                        <div class="card-price">
+                            <span class="price-label">Current Bid</span>
+                            <span class="price-value">${{ item.current_price }}</span>
+                        </div>
+                        <div class="card-meta">
+                            <span>Ends: {{ item.end_time|date:"M d, H:i" }}</span>
+                        </div>
+                        <a href="{% url 'auction_detail' item.pk %}" class="btn btn-primary btn-block">View Auction</a>
+                    </div>
+                </div>
+            {% endwith %}
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <h3>Your watchlist is empty</h3>
+        <p>Browse auctions and click "Add to Watchlist" to track items you're interested in.</p>
+        <a href="{% url 'auction_list' %}" class="btn btn-primary">Browse Auctions</a>
+    </div>
+{% endif %}
+{% endblock %}
+

@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Auction — LiveAuction{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-card">
+        <h1>📋 List an Item for Auction</h1>
+        <p>Fill in the details below to create your auction listing.</p>
+
+        <form method="post" enctype="multipart/form-data" class="auction-form">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-error">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="form-group">
+                <label for="{{ form.title.id_for_label }}">Item Title *</label>
+                {{ form.title }}
+                {% if form.title.errors %}<span class="error-text">{{ form.title.errors }}</span>{% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.description.id_for_label }}">Description *</label>
+                {{ form.description }}
+                {% if form.description.errors %}<span class="error-text">{{ form.description.errors }}</span>{% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.image.id_for_label }}">Item Image (optional)</label>
+                {{ form.image }}
+                {% if form.image.errors %}<span class="error-text">{{ form.image.errors }}</span>{% endif %}
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.starting_price.id_for_label }}">Starting Price ($) *</label>
+                    {{ form.starting_price }}
+                    {% if form.starting_price.errors %}<span class="error-text">{{ form.starting_price.errors }}</span>{% endif %}
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.start_time.id_for_label }}">Auction Start Time *</label>
+                    {{ form.start_time }}
+                    {% if form.start_time.errors %}<span class="error-text">{{ form.start_time.errors }}</span>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.end_time.id_for_label }}">Auction End Time *</label>
+                    {{ form.end_time }}
+                    {% if form.end_time.errors %}<span class="error-text">{{ form.end_time.errors }}</span>{% endif %}
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Create Auction</button>
+                <a href="{% url 'auction_list' %}" class="btn btn-outline">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LiveAuction — Real-Time Bidding Platform{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="{% url 'home' %}" class="nav-brand">
+            <span>LA</span> LiveAuction
+        </a>
+        <button class="nav-toggle" aria-label="Toggle navigation">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <ul class="nav-links">
+            <li><a href="{% url 'home' %}">Home</a></li>
+            <li><a href="{% url 'auction_public_list' %}">Live Auctions</a></li>
+            <li><a href="{% url 'auction_list' %}">All Listings</a></li>
+            {% if user.is_authenticated %}
+                <li><a href="{% url 'create_auction' %}">+ List Item</a></li>
+                <li><a href="{% url 'watchlist' %}">Watchlist</a></li>
+                <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li><a href="{% url 'logout' %}" class="btn btn-outline btn-sm">Logout ({{ user.username }})</a></li>
+            {% else %}
+                <li><a href="{% url 'login' %}" class="btn btn-outline btn-sm">Login</a></li>
+                <li><a href="{% url 'register' %}" class="btn btn-primary btn-sm">Register</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>
+
+<!-- Flash Messages -->
+{% if messages %}
+<div class="messages-container">
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {% if message.tags == 'success' %}
+                <span>✅</span>
+            {% elif message.tags == 'error' %}
+                <span>⚠️</span>
+            {% else %}
+                <span>ℹ️</span>
+            {% endif %}
+            <span>{{ message }}</span>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Main Content -->
+<main class="main-content">
+    {% block content %}{% endblock %}
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+    <div style="max-width: 1240px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <strong style="color: var(--white); font-size: 0.95rem;">LiveAuction House</strong>
+            <p style="margin-top: 4px; color: var(--text-dim);">Curated lots. Real-time bidding. Serious collecting.</p>
+        </div>
+        <div>
+            <p>&copy; 2026 LiveAuction. Clean backend architecture with SQLite/PostgreSQL support.</p>
+        </div>
+    </div>
+</footer>
+
+<script src="/static/js/main.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

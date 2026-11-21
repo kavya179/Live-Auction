@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard — LiveAuction{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>📊 Your Dashboard</h1>
+    <p>Welcome back, <strong>{{ user.username }}</strong>!</p>
+</div>
+
+<div class="dashboard-grid">
+
+    <!-- My Listings -->
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h2>📋 My Listings</h2>
+            <a href="{% url 'create_auction' %}" class="btn btn-primary btn-sm">+ New Listing</a>
+        </div>
+
+        {% if my_listings %}
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Status</th>
+                            <th>Starting Price</th>
+                            <th>Current Price</th>
+                            <th>Bids</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in my_listings %}
+                            <tr>
+                                <td>{{ item.title }}</td>
+                                <td>
+                                    {% if item.status == 'live' %}
+                                        <span class="badge badge-live">Live</span>
+                                    {% elif item.status == 'upcoming' %}
+                                        <span class="badge badge-upcoming">Upcoming</span>
+                                    {% else %}
+                                        <span class="badge badge-ended">Ended</span>
+                                    {% endif %}
+                                </td>
+                                <td>${{ item.starting_price }}</td>
+                                <td>${{ item.current_price }}</td>
+                                <td>{{ item.bids.count }}</td>
+                                <td><a href="{% url 'auction_detail' item.pk %}" class="link-action">View →</a></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state-sm">
+                <p>You haven't listed any items yet.</p>
+                <a href="{% url 'create_auction' %}" class="btn btn-outline btn-sm">Create your first listing</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- My Bids -->
+    <div class="dashboard-section">
+        <div class="section-header">
+            <h2>🔨 My Bids</h2>
+        </div>
+
+        {% if my_bids %}
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>My Bid</th>
+                            <th>Current Price</th>
+                            <th>Status</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bid in my_bids %}
+                            <tr>
+                                <td><a href="{% url 'auction_detail' bid.item.pk %}">{{ bid.item.title }}</a></td>
+                                <td>${{ bid.amount }}</td>
+                                <td>${{ bid.item.current_price }}</td>
+                                <td>
+                                    {% if bid.amount == bid.item.current_price %}
+                                        <span class="badge badge-live">Leading 🏆</span>
+                                    {% else %}
+                                        <span class="badge badge-ended">Outbid</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ bid.timestamp|date:"M d, H:i" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state-sm">
+                <p>You haven't placed any bids yet.</p>
+                <a href="{% url 'auction_list' %}" class="btn btn-outline btn-sm">Browse auctions</a>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
+

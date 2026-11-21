@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}All Auctions — LiveAuction{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>All Auctions</h1>
+    <p>Browse and bid on items from our community.</p>
+</div>
+
+<!-- Filter Tabs -->
+<div class="filter-tabs">
+    <a href="{% url 'auction_list' %}" class="tab {% if status_filter == 'all' %}active{% endif %}">All</a>
+    <a href="?status=live" class="tab {% if status_filter == 'live' %}active{% endif %}">🔴 Live</a>
+    <a href="?status=upcoming" class="tab {% if status_filter == 'upcoming' %}active{% endif %}">⏳ Upcoming</a>
+    <a href="?status=ended" class="tab {% if status_filter == 'ended' %}active{% endif %}">✅ Ended</a>
+</div>
+
+{% if items %}
+    <div class="auction-grid">
+        {% for item in items %}
+            <div class="auction-card">
+                {% if item.image %}
+                    <img src="{{ item.image.url }}" alt="{{ item.title }}" class="card-img">
+                {% else %}
+                    <div class="card-img-placeholder">🖼️</div>
+                {% endif %}
+                <div class="card-body">
+                    {% if item.status == 'live' %}
+                        <span class="badge badge-live">🔴 LIVE</span>
+                    {% elif item.status == 'upcoming' %}
+                        <span class="badge badge-upcoming">⏳ Upcoming</span>
+                    {% else %}
+                        <span class="badge badge-ended">✅ Ended</span>
+                    {% endif %}
+
+                    <h3 class="card-title">{{ item.title }}</h3>
+                    <p class="card-desc">{{ item.description|truncatechars:80 }}</p>
+
+                    <div class="card-price">
+                        <span class="price-label">
+                            {% if item.status == 'upcoming' %}Starting Price{% else %}Current Bid{% endif %}
+                        </span>
+                        <span class="price-value">${{ item.current_price }}</span>
+                    </div>
+
+                    <div class="card-meta">
+                        <span>By: {{ item.seller.username }}</span>
+                        <span>{{ item.bids.count }} bid(s)</span>
+                    </div>
+
+                    <a href="{% url 'auction_detail' item.pk %}" class="btn btn-primary btn-block">
+                        {% if item.status == 'live' %}Bid Now{% else %}View Details{% endif %}
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <h3>No auctions found</h3>
+        <p>Try a different filter or check back later.</p>
+        {% if user.is_authenticated %}
+            <a href="{% url 'create_auction' %}" class="btn btn-primary">List an Item</a>
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}
+

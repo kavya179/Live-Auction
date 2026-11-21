@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% block title %}Live Auction — Real-Time Bidding Platform{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-eyebrow">
+            <span class="live-dot"></span> Next-Gen Real-Time Auctions
+        </div>
+        <h1>Live Auction <span>Platform</span></h1>
+        <p>Discover rare items, place competitive bids in real-time, and experience live auctions with instant price updates.</p>
+        <div class="hero-buttons">
+            <a href="{% url 'auction_public_list' %}" class="btn btn-primary btn-lg">Browse Live Auctions</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'create_auction' %}" class="btn btn-outline btn-lg">+ List New Item</a>
+            {% else %}
+                <a href="{% url 'register' %}" class="btn btn-outline btn-lg">Create Free Account</a>
+            {% endif %}
+        </div>
+        <div class="hero-stats">
+            <div class="hero-stat-item">
+                <span class="hero-stat-value">${{ available_auctions|length }}</span>
+                <span class="hero-stat-label">Active Auctions</span>
+            </div>
+            <div class="hero-stat-item">
+                <span class="hero-stat-value">Instant</span>
+                <span class="hero-stat-label">Price Updates</span>
+            </div>
+            <div class="hero-stat-item">
+                <span class="hero-stat-value">100%</span>
+                <span class="hero-stat-label">Atomic Transactions</span>
+            </div>
+        </div>
+    </div>
+    <aside class="hero-side-note" aria-label="Live auction status">
+        <span class="hero-note-kicker">LIVE NOW · 24/7</span>
+        <strong>Competitive bidding, beautifully simple.</strong>
+        <p>Follow every price movement as it happens.</p>
+        <div class="hero-note-lines" aria-hidden="true">
+            <span></span><span></span><span></span>
+        </div>
+    </aside>
+</section>
+
+<!-- Available Auctions Section -->
+<section class="section">
+    <div class="section-header">
+        <div class="section-title">
+            <span>Available Live Auctions</span>
+            <span class="pill">Real-Time</span>
+        </div>
+        <a href="{% url 'auction_public_list' %}" class="link-more">View all auctions &rarr;</a>
+    </div>
+
+    {% if available_auctions %}
+        <div class="auction-grid">
+            {% for auction in available_auctions %}
+                <div class="auction-card {% if auction.status == 'LIVE' %}card-live{% endif %}">
+                    <div class="auction-card-visual visual-{{ forloop.counter0 }}"></div>
+                    <div class="card-body">
+                        <div class="card-badges">
+                            {% if auction.status == 'LIVE' %}
+                                <span class="badge badge-live">
+                                    <span class="live-dot"></span> LIVE
+                                </span>
+                            {% else %}
+                                <span class="badge badge-closed">CLOSED</span>
+                            {% endif %}
+                            {% if auction.winner_name %}
+                                <span class="badge badge-winner">🏆 {{ auction.winner_name }}</span>
+                            {% endif %}
+                        </div>
+
+                        <h3 class="card-title">{{ auction.title }}</h3>
+                        <p class="card-desc">{{ auction.description|truncatechars:95 }}</p>
+
+                        <div class="card-price-row">
+                            <div>
+                                <span class="price-label">Current Highest Price</span>
+                                <span class="price-value price-gold">${{ auction.current_price }}</span>
+                            </div>
+                            <div style="text-align: right;">
+                                <span class="price-label">Starting Price</span>
+                                <span style="font-size: 0.95rem; color: var(--text-muted); font-weight: 600;">${{ auction.starting_price }}</span>
+                            </div>
+                        </div>
+
+                        <div class="card-meta">
+                            <div>
+                                <span style="color: var(--text-dim);">Time Left:</span>
+                                <span style="font-weight: 600; color: var(--text-primary);" data-countdown="{{ auction.end_time|date:'c' }}">Calculating...</span>
+                            </div>
+                            <div>
+                                <span>{{ auction.auction_bids.count }} bid(s)</span>
+                            </div>
+                        </div>
+
+                        <a href="{% url 'auction_public_detail' auction.pk %}" class="btn btn-primary btn-block">
+                            {% if auction.status == 'LIVE' %}
+                                🔨 View Auction &amp; Bid
+                            {% else %}
+                                👁️ View Auction Result
+                            {% endif %}
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">🏷️</div>
+            <h3>No Live Auctions Available Currently</h3>
+            <p>New auctions are scheduled regularly. Create one or check back shortly!</p>
+            {% if user.is_authenticated %}
+                <a href="{% url 'create_auction' %}" class="btn btn-primary">List an Item</a>
+            {% endif %}
+        </div>
+    {% endif %}
+</section>
+
+<!-- Community Listings Section -->
+{% if live_auctions or upcoming_auctions %}
+<section class="section">
+    <div class="section-header">
+        <div class="section-title">
+            <span>Community Item Listings</span>
+            <span class="pill">Verified</span>
+        </div>
+        <a href="{% url 'auction_list' %}" class="link-more">All Listings &rarr;</a>
+    </div>
+
+    <div class="auction-grid">
+        {% for item in live_auctions %}
+            <div class="auction-card card-live">
+                {% if item.image %}
+                    <img src="{{ item.image.url }}" alt="{{ item.title }}" class="card-img">
+                {% else %}
+                    <div class="card-img-placeholder">🖼️</div>
+                {% endif %}
+                <div class="card-body">
+                    <div class="card-badges">
+                        <span class="badge badge-live"><span class="live-dot"></span> LIVE</span>
+                    </div>
+                    <h3 class="card-title">{{ item.title }}</h3>
+                    <p class="card-desc">{{ item.description|truncatechars:80 }}</p>
+
+                    <div class="card-price-row">
+                        <div>
+                            <span class="price-label">Current Bid</span>
+                            <span class="price-value">${{ item.current_price }}</span>
+                        </div>
+                        <div style="text-align: right;">
+                            <span class="price-label">Seller</span>
+                            <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">{{ item.seller.username }}</span>
+                        </div>
+                    </div>
+
+                    <div class="card-meta">
+                        <div>
+                            <span>Closes: {{ item.end_time|date:"M d, H:i" }}</span>
+                        </div>
+                        <div>
+                            <span>{{ item.bids.count }} bid(s)</span>
+                        </div>
+                    </div>
+
+                    <a href="{% url 'auction_detail' item.pk %}" class="btn btn-primary btn-block">View Auction</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Platform Value Props -->
+<section class="stats-section">
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">⚡</div>
+            <div class="stat-label">Concurrency Safe</div>
+            <div class="stat-value">Row Locking</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🛡️</div>
+            <div class="stat-label">Data Integrity</div>
+            <div class="stat-value">Atomic Tx</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⏱️</div>
+            <div class="stat-label">Live Bidding</div>
+            <div class="stat-value">Countdown</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-label">Winner Tracking</div>
+            <div class="stat-value">Automated</div>
+        </div>
+    </div>
+</section>
+{% endblock %}

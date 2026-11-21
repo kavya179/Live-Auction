@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ item.title }} — LiveAuction{% endblock %}
+
+{% block content %}
+<div class="detail-container">
+
+    <!-- Left: Item Info -->
+    <div class="detail-left">
+        {% if item.image %}
+            <img src="{{ item.image.url }}" alt="{{ item.title }}" class="detail-img">
+        {% else %}
+            <div class="detail-img-placeholder">
+                <div>🖼️</div>
+                <div style="font-size: 0.9rem;">Item Listing #{{ item.pk }}</div>
+            </div>
+        {% endif %}
+
+        <div class="detail-info">
+            <div class="detail-badges">
+                {% if item.status == 'live' %}
+                    <span class="badge badge-live"><span class="live-dot"></span> LIVE</span>
+                {% elif item.status == 'upcoming' %}
+                    <span class="badge badge-upcoming">⏳ Upcoming</span>
+                {% else %}
+                    <span class="badge badge-ended">✅ Ended</span>
+                {% endif %}
+            </div>
+
+            <h1 class="detail-title">{{ item.title }}</h1>
+            <p class="detail-desc">{{ item.description }}</p>
+
+            <div class="detail-meta-grid">
+                <div class="meta-item">
+                    <span class="meta-label">Seller</span>
+                    <span class="meta-value">{{ item.seller.username }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Starting Price</span>
+                    <span class="meta-value">${{ item.starting_price }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Start Time</span>
+                    <span class="meta-value">{{ item.start_time|date:"M d, Y H:i" }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">End Time</span>
+                    <span class="meta-value">{{ item.end_time|date:"M d, Y H:i" }}</span>
+                </div>
+            </div>
+
+            {% if user.is_authenticated and user != item.seller %}
+                <form action="{% url 'toggle_watchlist' item.pk %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="watchlist-btn {% if is_watching %}watching{% endif %}">
+                        {% if is_watching %}💔 Remove from Watchlist{% else %}❤️ Add to Watchlist{% endif %}
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right: Bidding Panel -->
+    <div class="detail-right">
+
+        <!-- Current Price Box -->
+        <div class="price-box">
+            <div class="price-box-eyebrow">Current Highest Bid</div>
+            <div class="price-box-value" id="current-price">${{ item.current_price }}</div>
+            <div class="price-box-count">{{ item.bids.count }} bid(s) placed</div>
+        </div>
+
+        <!-- Countdown -->
+        <div style="background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px; margin-bottom: 16px; text-align: center;">
+            <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;">
+                Time Remaining
+            </div>
+            <div class="countdown-box" data-countdown="{{ item.end_time|date:'c' }}">
+                <div class="countdown-unit">
+                    <span class="countdown-num cd-days">00</span>
+                    <span class="countdown-label">Days</span>
+                </div>
+                <div class="countdown-unit">
+                    <span class="countdown-num cd-hours">00</span>
+                    <span class="countdown-label">Hours</span>
+                </div>
+                <div class="countdown-unit">
+                    <span class="countdown-num cd-mins">00</span>
+                    <span class="countdown-label">Mins</span>
+                </div>
+                <div class="countdown-unit">
+                    <span class="countdown-num cd-secs">00</span>
+                    <span class="countdown-label">Secs</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Feed Banner -->
+        {% if item.status == 'live' %}
+        <div class="live-feed-banner">
+            <span class="live-dot"></span> Live feed active — bids broadcast in real time
+        </div>
+        {% endif %}
+
+        <!-- Bid Form -->
+        {% if user.is_authenticated %}
+            {% if item.status == 'live' %}
+                {% if user != item.seller %}
+                    <div class="bid-form-box">
+                        <h3>Place Your Bid</h3>
+                        <p class="bid-hint">Your bid must be greater than $<strong>{{ item.current_price }}</strong></p>
+                        <form action="{% url 'place_bid' item.pk %}" method="post" id="bid-form">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="{{ bid_form.amount.id_for_label }}">Bid Amount ($ USD)</label>
+                                {{ bid_form.amount }}
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block btn-lg">🔨 Place Bid</button>
+                        </form>
+                    </div>
+                {% else %}
+                    <div class="info-box">ℹ️ You are the seller of this item.</div>
+                {% endif %}
+            {% elif item.status == 'upcoming' %}
+                <div class="info-box">⏳ Auction hasn't started yet. Starts at {{ item.start_time|date:"M d, H:i" }}</div>
+            {% else %}
+                <div class="closed-banner">✅ This auction has ended.</div>
+            {% endif %}
+        {% else %}
+            <div class="info-box">
+                <a href="{% url 'login' %}">Login</a> or <a href="{% url 'register' %}">Register</a> to place a bid.
+            </div>
+        {% endif %}
+
+        <!-- Bid History -->
+        <div class="bid-history">
+            <div class="bid-history-header">
+                <h3>Bidding History</h3>
+                <span class="bid-count-pill">{{ bids|length }} bids</span>
+            </div>
+            <div id="bid-list">
+                {% if bids %}
+                    {% for bid in bids %}
+                        <div class="bid-entry">
+                            <span class="bid-user">{{ bid.bidder.username }}</span>
+                            <span class="bid-amount">${{ bid.amount }}</span>
+                            <span class="bid-time">{{ bid.timestamp|date:"H:i:s" }}</span>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="no-bids">No bids yet. Be the first!</p>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
